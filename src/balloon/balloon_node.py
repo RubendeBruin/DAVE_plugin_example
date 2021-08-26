@@ -40,6 +40,9 @@ class Balloon(Manager):
             for n in self.nodes:
                 self._scene.delete(n)
 
+    def depends_on(self) -> list:
+        return []
+
 
 def new_balloon(scene, name):
     b = Balloon(scene=scene, name=name)
