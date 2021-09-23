@@ -8,7 +8,7 @@ class Balloon(Manager):
         scene._verify_name_available(name)
 
         super().__init__(scene)
-        self.name = name
+        self._name = name
 
         self.axis = scene.new_axis(name + '_balloon_body', fixed=[False, False, False, True, True, True])
         self.axis.manager = self
@@ -42,6 +42,15 @@ class Balloon(Manager):
 
     def depends_on(self) -> list:
         return []
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        super().name = value
+
 
 
 def new_balloon(scene, name):
