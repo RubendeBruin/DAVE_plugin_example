@@ -1,8 +1,13 @@
+from pathlib import Path
+
+from PySide2.QtGui import QIcon, QPixmap, QImage
 from PySide2.QtWidgets import QPushButton
 from balloon import BalloonDock
 from .balloon_node import Balloon
 from .ballon_editor import BalloonNodeEditor
 from DAVE.gui.main import guiEventType
+
+
 
 def plugin_init(gui):
     """Add a button to the tool-bar and set it to activate a workspace with the name "Balloon" """
@@ -30,8 +35,12 @@ def plugin_node_editor(node):
         return BalloonNodeEditor
 
 def plugin_context(menu, node_name,gui):
-    code = 'from balloon import Balloon\nBalloon(s, s.available_name_like("new_balloon"))'
+    code = 'Balloon(s, s.available_name_like("new_balloon"))'
     def action():
         gui.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-    menu.addAction("Add balloon", action)
+    BalloonIcon = QIcon(str(Path(__file__).parent / 'balloon.png'))
+
+    action = menu.addAction("Add balloon", action)
+    action.setIcon(BalloonIcon)
+

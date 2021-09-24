@@ -10,12 +10,26 @@ Add:
 - dockwidgets
 - nodes
 
+
+## Making new node-types available when running code
+
+DAVE executes python code when importing files, copying the scene or adding nodes.
+
+New classes need to be made availalbe to the environment when running code in order to be usable.
+
+This is done by adding them to a global setting `DAVE_ADDITIONAL_RUNTIME_MODULES`:
+```python
+# Add the balloon class to the modules that are available when executing code
+
+from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES
+DAVE_ADDITIONAL_RUNTIME_MODULES['Balloon'] = Balloon
+```
+
 ## Adding stuff to the main gui
 
 plugin_init is executed at the end of the .__init__ function.
-It takes a single parameter being the instance of the Gui that is being intialized *
+It takes a single parameter being the instance of the Gui that is being intialized (
 the `self` of the init function)
-
 
 
 ## Workspaces
@@ -39,10 +53,27 @@ This works via the context-menu
 openContextMenyAt(..., node_name, ...)
 ```
 
-plug-in to add entries to context menu. Info:
+plug-in to add entries to context menu.
 
-- menu
-- node
+the plugin gets called with the following arguments:
+
+1. QMenu object
+2. The name of the first selected node (if any)
+3. A reference to the main gui
+
+```python
+for plugin in self.plugins_context:
+    plugin(menu, node_name, self)
+```
+
+the reference to the main gui can be used to run code as follows:
+```python
+code = 'Balloon(s, s.available_name_like("new_balloon"))'
+def action():
+    gui.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+menu.addAction("Add balloon", action)
+```
 
 
 ## Editing nodes

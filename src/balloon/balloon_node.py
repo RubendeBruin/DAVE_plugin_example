@@ -1,5 +1,6 @@
 from DAVE import *
 
+
 class Balloon(Manager):
     """A balloon is a hot-air balloon with a rope"""
 
@@ -10,7 +11,7 @@ class Balloon(Manager):
         super().__init__(scene)
         self._name = name
 
-        self.axis = scene.new_axis(name + '_balloon_body', fixed=[False, False, False, True, True, True])
+        self.axis = scene.new_frame(name + '_balloon_body', fixed=[False, False, False, True, True, True])
         self.axis.manager = self
 
         self._balloon_size = 30
@@ -51,6 +52,11 @@ class Balloon(Manager):
     def name(self, value):
         super().name = value
 
+
+# Add the balloon class to the modules that are available when executing code
+
+from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES
+DAVE_ADDITIONAL_RUNTIME_MODULES['Balloon'] = Balloon
 
 
 def new_balloon(scene, name):
