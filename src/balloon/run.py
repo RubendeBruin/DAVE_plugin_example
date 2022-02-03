@@ -1,5 +1,8 @@
+from PySide2.QtGui import QIcon
+
 from DAVE import *
 from DAVE.gui import Gui
+from DAVE.gui.dockwidget import guiEventType
 
 from balloon import *
 
@@ -17,12 +20,51 @@ s = Scene()
 #
 # In this case this is not needed as balloon itself is not painted (only the nodes managed by balloon are)
 
-
 new_balloon(s, "test balloon")
 
+"""Normally the functions below would be added to the __init__.py files of the modules that define
+the functionality such that they are automatically registered when imported.
 
-Gui(s,
-    plugins_init=[plugin_init],
-    plugins_workspace = [plugin_activate_workspace],
-    plugins_editor = [plugin_node_editor],
-    plugins_context= [plugin_context])
+For clarity of the example they are all placed together in this file.
+"""
+
+
+# ---- Adding a plugin to the interface start-up -----
+
+def my_function(gui):
+	print('executed on startup')
+
+from DAVE.gui.main import DAVE_GUI_PLUGINS_INIT
+DAVE_GUI_PLUGINS_INIT.append(my_function)
+
+# ---- Adding a button -----
+
+from DAVE.gui.main import DAVE_GUI_WORKSPACE_BUTTONS
+DAVE_GUI_WORKSPACE_BUTTONS.insert(0,('BaLLoooon !', 'BALLOON'))  # insert tuple at front
+
+# ---- Responding to the activate-workspace -----
+
+def plugin_activate_workspace(gui, workspacename):
+    print('calling activateworkspace')
+    if workspacename.upper() == 'BALLOON':
+        gui.show_guiWidget('Balloon')  # <-- ID of the balloon dock
+
+from DAVE.gui.main import DAVE_GUI_PLUGINS_WORKSPACE
+DAVE_GUI_PLUGINS_WORKSPACE.append(plugin_activate_workspace)
+
+# ----- The context menu -----
+
+def plugin_context(menu, node_name,gui):
+    code = 'Balloon(s, s.available_name_like("new_balloon"))'
+    def action():
+        gui.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+    BalloonIcon = QIcon(str(Path(__file__).parent / 'balloon.png'))
+
+    action = menu.addAction("Add balloon", action)
+    action.setIcon(BalloonIcon)
+
+from DAVE.gui.main import DAVE_GUI_PLUGINS_CONTEXT
+DAVE_GUI_PLUGINS_CONTEXT.append(plugin_context)
+
+Gui(s)

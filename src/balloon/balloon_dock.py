@@ -1,6 +1,5 @@
 from PySide2 import QtWidgets, QtCore
 
-
 from DAVE.gui.dockwidget import *
 
 class BalloonDock(guiDockWidget):
@@ -35,3 +34,4 @@ class BalloonDock(guiDockWidget):
         """Return the default location, or None for floating"""
         return None
 
+DAVE_GUI_DOCKS['Balloon'] = BalloonDock

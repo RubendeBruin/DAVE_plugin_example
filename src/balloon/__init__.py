@@ -1,4 +1,3 @@
 from .balloon_node import *
 from .balloon_dock import BalloonDock
-
-from .plugins import *
+from .balloon_editor import BalloonNodeEditor

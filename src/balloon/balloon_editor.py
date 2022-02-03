@@ -1,6 +1,7 @@
 from PySide2 import QtWidgets
 
-from DAVE.gui.widget_nodeprops import NodeEditor, Singleton
+from DAVE.gui.widget_nodeprops import NodeEditor, Singleton, DAVE_GUI_NODE_EDITORS
+from balloon.balloon_node import Balloon
 
 @Singleton
 class BalloonNodeEditor(NodeEditor):
@@ -45,3 +46,4 @@ class BalloonNodeEditor(NodeEditor):
 
         self.run_code(code)
 
+DAVE_GUI_NODE_EDITORS[Balloon] = BalloonNodeEditor
