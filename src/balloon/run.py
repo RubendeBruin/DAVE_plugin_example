@@ -1,6 +1,12 @@
 from PySide2.QtGui import QIcon
 
 from DAVE import *
+
+from DAVE.settings import PROPS, PROPS_GUI,PROPS_SETTABLE
+
+print('stop here')
+
+
 from DAVE.gui import Gui
 from DAVE.gui.dockwidget import guiEventType
 

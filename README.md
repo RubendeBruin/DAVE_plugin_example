@@ -1,4 +1,4 @@
-# Expanding DAVE
+# Extending DAVE
 
 When adding (proprietary) elements to DAVE you may want to extend the GUI without
 changing the source-code of DAVE itself.
@@ -8,8 +8,13 @@ Add:
 - dockwidgets
 - nodes
 
+## New Node types
 
-## Making new node-types available when running code
+
+
+### Registering
+
+#### Registering the class
 
 DAVE executes python code when importing files, copying the scene or adding nodes.
 
@@ -22,6 +27,120 @@ This is done by adding them to a global setting `DAVE_ADDITIONAL_RUNTIME_MODULES
 from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES
 DAVE_ADDITIONAL_RUNTIME_MODULES['Balloon'] = Balloon
 ```
+
+#### Registering the properties and documentation
+
+The properties of the and their documentation need to be added to DAVE as well. This makes them available for timelines, limits derived-properties, reporting and others.
+
+The properties are registered in the following nested dictionary:
+
+```python
+from DAVE.settings import DAVE_NODEPROP_INFO,NodePropertyInfo
+
+# type is the node-type, for example Point
+# property-name is the name of the property, for example 'global_position'
+info = DAVE_NODEPROP_INFO[type][property_name]
+
+# info is a NodePropertyInfo object
+```
+
+The properties of nodes are used in various places in the guis and reporting:
+
+- The limits screen to define limits for single numerical properties
+
+  - Properties with a single numerical value
+
+- The derived properties screen - to show the values of derived properties
+
+  - Anything interesting, typically numerical and boolean values and sequences of those
+    - type = float, bool
+
+- Reporting module
+
+  - All properties that have a physical meaning and/or define how the model is structured (parent, meshes, etc)
+
+- Timeline module
+
+  - All settable single properties, including nodes and booleans
+    - type = float/bool/node
+    - settable = True
+
+- Exploration module
+
+  - All settable single numerical properties 
+
+  
+
+Besides that we need to have the following documentation available for each node/property combination:
+
+- short description (1 line)
+
+- long description
+
+- unit, eg [m]
+
+- remarks, eg (global) or (parent)
+
+  Here the property may be inherited and/or overridden.
+
+- settable: not read-only
+
+- single-settable: can be used in time-line - bool, Node, 
+
+- single-numeric: can be used as limit
+
+
+
+| Class | Property      | Short doc      | Long doc      | Unit       | Remarks  | type          | settable | single-settable | single-numeric |
+| ----- | ------------- | -------------- | ------------- | ---------- | -------- | ------------- | -------- | --------------- | -------------- |
+| Point | x             | x-position     | x-position... | [m]        | (parent) | float         | X        | X               | X              |
+| Point | parent        | parent         | parent...     |            | (Node)   | Frame         | X        | X               |                |
+| Node  | name          | name           | name...       |            | (unique) | str           | X        |                 |                |
+| Point | position      | position       | position...   | [m,m,m]    | (parent) | float         | X        |                 |                |
+| Point | applied_force | force          | force ...     | [kN,kN,kN] | (parent) | float         |          |                 | X              |
+| Point | force         | \|force\|      | force ...     | [kN]       |          | float         |          |                 | X              |
+| Frame | fixed_x       |                |               |            |          | bool          | X        | X               |                |
+| Frame | fixed         |                |               |            |          | bool          | X        |                 |                |
+| Node  | visible       | visible in GUI |               |            |          | bool          | X        | X               |                |
+| Cable | connections   |                |               |            |          | Point\|Circle | X        |                 |                |
+
+##### How, where and when
+
+When looking up the properties this will be done using a Node object and optionally a property name (these two are therefore the index of the database). Matching class needs to be done on an is-instance basis and considering overriding. 
+
+Say:
+
+```
+class A has property p
+class B derives from A and overrides property p
+class C derives from B
+```
+
+***How***
+
+requesting the documentation for property p on a node of class C should give the documentation of p of class B. This can be done using the mro. The property of the class with the lowest index in the mro of the node class is the one we want.
+
+The logical way to store is as a nested dictionary:
+
+`data[class][propname(str)] = node_property_info`
+
+with NodePropertyInfo a dataclass
+
+***Where and when***
+
+To store the data with the class as key, the class needs to be defined. So this info can only be created after definition of the classes.
+
+It makes sense to read the data from a .csv or pickle file, but those can not store classes. This means resolving the class from the class name which is easy enough via either globals() or, even better, the DAVE_ADDITIONAL_RUNTIME_MODULES dict.
+
+
+
+
+
+
+
+
+
+
 
 ## Creating a new dock
 
@@ -89,7 +208,7 @@ Adding a button can be done by adding (or inserting) an entry to the DAVE_GUI_WO
 
 ```PYTHON
 from DAVE.gui.main import DAVE_GUI_WORKSPACE_BUTTONS
-DAVE_GUI_WORKSPACE_BUTTONS.append('BaLLoooon !', 'BALLOON')
+DAVE_GUI_WORKSPACE_BUTTONS.append(('BaLLoooon !', 'BALLOON'))
 
 ```
 
@@ -102,13 +221,17 @@ Workspaces are controlled by the "activate_workspace" function. This function ty
 A plugin can be registered in `DAVE_GUI_PLUGINS_WORKSPACE`
 
 ```python
-def plugin_activate_workspace(gui, workspacename):
+def my_plugin_activate_workspace(gui, workspacename):
     print('calling activateworkspace')
-    if workspacename.upper() == 'BALLOON':
+    if workspacename.upper() == 'BALLOON': 
+        gui.close_all_open_docks() # close all other docks (optional)
         gui.show_guiWidget('Balloon')  # <-- ID of the balloon dock
-
+        
+    if worspacename.upper() == 'CONSTRUCT':   # <--- you can also act on activation of other docks
+        gui.show_guiWidget('Balloon')  # <-- ID of the balloon dock
+        
 from DAVE.gui.main import DAVE_GUI_PLUGINS_WORKSPACE
-DAVE_GUI_PLUGINS_WORKSPACE.append(my_function)
+DAVE_GUI_PLUGINS_WORKSPACE.append(my_plugin_activate_workspace)
 ```
 
 
