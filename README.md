@@ -120,7 +120,7 @@ class C derives from B
 
 requesting the documentation for property p on a node of class C should give the documentation of p of class B. This can be done using the mro. The property of the class with the lowest index in the mro of the node class is the one we want.
 
-The logical way to store is as a nested dictionary:
+The data is stored as a nested dictionary:
 
 `data[class][propname(str)] = node_property_info`
 
@@ -132,7 +132,57 @@ To store the data with the class as key, the class needs to be defined. So this 
 
 It makes sense to read the data from a .csv or pickle file, but those can not store classes. This means resolving the class from the class name which is easy enough via either globals() or, even better, the DAVE_ADDITIONAL_RUNTIME_MODULES dict.
 
+DAVE itself has an example of how to do this (in nodes.py) . This example is copied here fore convenience:
 
+```python
+cdir = Path(dirname(__file__))
+filename = cdir / './resources/node_prop_info.csv'
+from DAVE.settings import DAVE_NODEPROP_INFO, NodePropertyInfo
+
+if filename.exists():
+
+    types = DAVE_ADDITIONAL_RUNTIME_MODULES.copy()
+    types['tuple'] = tuple
+    types['int'] = int
+    types['float'] = float
+    types['bool'] = bool
+    types['str'] = str
+
+    btypes = dict()
+    btypes['True'] = True
+    btypes['False'] = False
+    btypes['true'] = True
+    btypes['false'] = False
+
+
+    with open(filename, newline='') as csvfile:
+        prop_reader = csv.reader(csvfile)
+        header = prop_reader.__next__()  # skip the header
+        for row in prop_reader:
+            cls_name = row[0]
+            cls = DAVE_ADDITIONAL_RUNTIME_MODULES[cls_name]
+
+            prop_name = row[1]
+            val_type = types[row[2]]
+
+            info = NodePropertyInfo(node_class=cls,
+                                    property_name=row[1],
+                                    property_type=val_type,
+                                    doc_short=row[3],
+                                    units=row[4],
+                                    remarks=row[5],
+                                    is_settable=btypes[row[6]],
+                                    is_single_settable=btypes[row[7]],
+                                    is_single_numeric=btypes[row[8]],
+                                    doc_long=row[9])
+
+            if cls not in DAVE_NODEPROP_INFO:
+                DAVE_NODEPROP_INFO[cls] = dict()
+            DAVE_NODEPROP_INFO[cls][prop_name]=info
+
+else:
+    print(f'Could not register node property info because {filename} does not exist')
+```
 
 
 
