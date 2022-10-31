@@ -347,5 +347,14 @@ DAVE_GUI_NODE_EDITORS[Balloon] = BalloonNodeEditor
 
 Create a new dock that reacts to the "SELECTION_CHANGED" event.
 
+# Paint
 
+How nodes are to be painted in the GUI is defined in DAVE.settings_visuals.
+
+A good place to start is by copying the paint of an existing node:
+
+```
+from DAVE.settings_visuals import AddPaintForNodeClassAsCopyOfOtherClass
+AddPaintForNodeClassAsCopyOfOtherClass("Balloon","Frame")
+```
 
