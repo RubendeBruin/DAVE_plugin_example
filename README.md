@@ -358,3 +358,16 @@ from DAVE.settings_visuals import AddPaintForNodeClassAsCopyOfOtherClass
 AddPaintForNodeClassAsCopyOfOtherClass("Balloon","Frame")
 ```
 
+# Icons
+
+An icon for the newly introduced node-type can be added as well. This icon can then be used in the node-tree.
+
+```
+# icons can only be added when an application is present, so check and create one if needed
+if QApplication.instance() is None:
+    app = QApplication()
+
+from DAVE.settings_visuals import ICONS
+ICONS[Balloon] = QIcon(":/icons/balloon.png")
+```
+
